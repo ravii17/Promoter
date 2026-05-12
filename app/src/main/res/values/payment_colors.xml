@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="orange_accent">#F58A07</color>
+    <color name="text_main">#1A1A1A</color>
+    <color name="text_sub">#757575</color>
+    <color name="bg_main">#FFFFFF</color>
+    <color name="bg_input">#FFFFFF</color>
+    <color name="border_input">#E0E0E0</color>
+    <color name="bg_segmented">#F5F6F8</color>
+    <color name="secure_text">#8A8A8A</color>
+</resources>
