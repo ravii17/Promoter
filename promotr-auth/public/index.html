@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Promotr Organiser Auth</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Promotr</p>
+            <h1>Organiser Auth</h1>
+          </div>
+          <button class="ghost-button" id="healthCheck" type="button">Health</button>
+        </header>
+
+        <nav class="tabs" aria-label="Auth flows">
+          <button class="tab is-active" type="button" data-tab="login">Login</button>
+          <button class="tab" type="button" data-tab="register">Register</button>
+        </nav>
+
+        <section class="panel is-active" id="loginPanel">
+          <form class="form" data-endpoint="/auth/organiser/send-otp">
+            <div class="form-head">
+              <h2>Login OTP</h2>
+              <span class="badge">Send</span>
+            </div>
+            <label>
+              Phone
+              <input name="phone" type="tel" placeholder="9999999999" required />
+            </label>
+            <button type="submit">Send OTP</button>
+          </form>
+
+          <form class="form" data-endpoint="/auth/organiser/verify-otp">
+            <div class="form-head">
+              <h2>Login Verify</h2>
+              <span class="badge">Token</span>
+            </div>
+            <label>
+              Phone
+              <input name="phone" type="tel" placeholder="9999999999" required />
+            </label>
+            <label>
+              OTP
+              <input name="otp" type="text" inputmode="numeric" placeholder="123456" required />
+            </label>
+            <button type="submit">Verify Login</button>
+          </form>
+        </section>
+
+        <section class="panel" id="registerPanel">
+          <form class="form" data-endpoint="/auth/organiser/register/send-otp">
+            <div class="form-head">
+              <h2>Register OTP</h2>
+              <span class="badge">123456</span>
+            </div>
+            <label>
+              Phone
+              <input name="phone" type="tel" placeholder="9999999999" required />
+            </label>
+            <button type="submit">Send OTP</button>
+          </form>
+
+          <form class="form" data-endpoint="/auth/organiser/register/verify-otp">
+            <div class="form-head">
+              <h2>Register Verify</h2>
+              <span class="badge">Check</span>
+            </div>
+            <label>
+              Phone
+              <input name="phone" type="tel" placeholder="9999999999" required />
+            </label>
+            <label>
+              OTP
+              <input name="otp" type="text" inputmode="numeric" value="123456" required />
+            </label>
+            <button type="submit">Verify Phone</button>
+          </form>
+
+          <form class="form wide" data-endpoint="/auth/organiser/register/complete">
+            <div class="form-head">
+              <h2>Complete Registration</h2>
+              <span class="badge">Create</span>
+            </div>
+            <label>
+              Phone
+              <input name="phone" type="tel" placeholder="9999999999" required />
+            </label>
+            <label>
+              Name
+              <input name="name" type="text" placeholder="Organiser Name" required />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" placeholder="name@example.com" />
+            </label>
+            <button type="submit">Create Organiser</button>
+          </form>
+        </section>
+      </section>
+
+      <aside class="response-panel">
+        <div class="response-head">
+          <h2>Response</h2>
+          <button class="ghost-button" id="clearResponse" type="button">Clear</button>
+        </div>
+        <pre id="responseBox">Ready</pre>
+      </aside>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
