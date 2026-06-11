@@ -1,117 +1,1991 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Promotr Organiser Auth</title>
-    <link rel="stylesheet" href="/styles.css" />
-  </head>
-  <body>
-    <main class="shell">
-      <section class="workspace">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">Promotr</p>
-            <h1>Organiser Auth</h1>
-          </div>
-          <button class="ghost-button" id="healthCheck" type="button">Health</button>
-        </header>
+    <!-- Google Fonts: Outfit (headings) & Inter (body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root {
+            --bg-main: #0a0a0f;
+            --bg-card: rgba(20, 20, 31, 0.65);
+            --bg-panel: rgba(13, 13, 20, 0.85);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.18);
+            --border-focus: #8b5cf6;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+            --accent-gradient: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+            --success: #10b981;
+            --error: #f43f5e;
+            --warning: #f59e0b;
+            --neon-glow: 0 0 20px rgba(124, 58, 237, 0.4);
+            --font-outfit: 'Outfit', sans-serif;
+            --font-inter: 'Inter', sans-serif;
+        }
 
-        <nav class="tabs" aria-label="Auth flows">
-          <button class="tab is-active" type="button" data-tab="login">Login</button>
-          <button class="tab" type="button" data-tab="register">Register</button>
-        </nav>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        <section class="panel is-active" id="loginPanel">
-          <form class="form" data-endpoint="/auth/organiser/send-otp">
-            <div class="form-head">
-              <h2>Login OTP</h2>
-              <span class="badge">Send</span>
-            </div>
-            <label>
-              Phone
-              <input name="phone" type="tel" placeholder="9999999999" required />
-            </label>
-            <button type="submit">Send OTP</button>
-          </form>
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: var(--font-inter);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-          <form class="form" data-endpoint="/auth/organiser/verify-otp">
-            <div class="form-head">
-              <h2>Login Verify</h2>
-              <span class="badge">Token</span>
-            </div>
-            <label>
-              Phone
-              <input name="phone" type="tel" placeholder="9999999999" required />
-            </label>
-            <label>
-              OTP
-              <input name="otp" type="text" inputmode="numeric" placeholder="123456" required />
-            </label>
-            <button type="submit">Verify Login</button>
-          </form>
-        </section>
+        /* Ambient Glowing Background Orbs */
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: 0;
+            opacity: 0.12;
+            pointer-events: none;
+            animation: floatOrb 15s ease-in-out infinite alternate;
+        }
+        .orb-1 {
+            width: 450px;
+            height: 450px;
+            background: #7c3aed;
+            top: -5%;
+            left: -5%;
+        }
+        .orb-2 {
+            width: 600px;
+            height: 600px;
+            background: #2563eb;
+            bottom: -10%;
+            right: -5%;
+            animation-delay: -7s;
+        }
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(60px, -60px) scale(1.15); }
+        }
 
-        <section class="panel" id="registerPanel">
-          <form class="form" data-endpoint="/auth/organiser/register/send-otp">
-            <div class="form-head">
-              <h2>Register OTP</h2>
-              <span class="badge">123456</span>
-            </div>
-            <label>
-              Phone
-              <input name="phone" type="tel" placeholder="9999999999" required />
-            </label>
-            <button type="submit">Send OTP</button>
-          </form>
+        /* Top Navigation Header */
+        header {
+            width: 100%;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: var(--font-outfit);
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #fff 30%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-gradient);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 900;
+            font-size: 1.2rem;
+            -webkit-text-fill-color: white;
+            box-shadow: var(--neon-glow);
+        }
+        .logo-badge {
+            background: rgba(124, 58, 237, 0.15);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            color: #c084fc;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
 
-          <form class="form" data-endpoint="/auth/organiser/register/verify-otp">
-            <div class="form-head">
-              <h2>Register Verify</h2>
-              <span class="badge">Check</span>
-            </div>
-            <label>
-              Phone
-              <input name="phone" type="tel" placeholder="9999999999" required />
-            </label>
-            <label>
-              OTP
-              <input name="otp" type="text" inputmode="numeric" value="123456" required />
-            </label>
-            <button type="submit">Verify Phone</button>
-          </form>
+        /* Main Workspace Layout */
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 480px;
+            flex: 1;
+            gap: 2rem;
+            padding: 2.5rem;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
 
-          <form class="form wide" data-endpoint="/auth/organiser/register/complete">
-            <div class="form-head">
-              <h2>Complete Registration</h2>
-              <span class="badge">Create</span>
-            </div>
-            <label>
-              Phone
-              <input name="phone" type="tel" placeholder="9999999999" required />
-            </label>
-            <label>
-              Name
-              <input name="name" type="text" placeholder="Organiser Name" required />
-            </label>
-            <label>
-              Email
-              <input name="email" type="email" placeholder="name@example.com" />
-            </label>
-            <button type="submit">Create Organiser</button>
-          </form>
-        </section>
-      </section>
+        @media (max-width: 1080px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                padding: 1.5rem;
+                gap: 1.5rem;
+            }
+        }
 
-      <aside class="response-panel">
-        <div class="response-head">
-          <h2>Response</h2>
-          <button class="ghost-button" id="clearResponse" type="button">Clear</button>
+        /* Left Column: Form Wrapper */
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 550px;
+        }
+
+        /* Glassmorphic Auth Card */
+        .auth-card {
+            width: 100%;
+            max-width: 520px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.5rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+        }
+
+        /* Tab Layout */
+        .tabs-container {
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 4px;
+            border-radius: 9999px;
+            display: flex;
+            margin-bottom: 2rem;
+            z-index: 1;
+        }
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.8rem 1.5rem;
+            font-family: var(--font-outfit);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            z-index: 2;
+            transition: color 0.3s;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .tab-btn.active {
+            color: white;
+        }
+        .tab-indicator {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            left: 4px;
+            width: calc(50% - 4px);
+            background: var(--primary-gradient);
+            border-radius: 9999px;
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+            z-index: 1;
+        }
+
+        /* Dynamic Step progress bar */
+        .steps-progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+            padding: 0 0.5rem;
+        }
+        .steps-progress-line {
+            position: absolute;
+            top: 15px;
+            left: 1.5rem;
+            right: 1.5rem;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            z-index: 1;
+        }
+        .steps-progress-fill {
+            position: absolute;
+            top: 15px;
+            left: 1.5rem;
+            width: 0%;
+            height: 2px;
+            background: var(--primary-gradient);
+            z-index: 2;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-main);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            font-size: 0.8rem;
+            font-family: var(--font-outfit);
+            font-weight: 700;
+            color: var(--text-muted);
+            transition: all 0.4s ease;
+        }
+        .step-dot.active {
+            border-color: #8b5cf6;
+            color: #c084fc;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+        }
+        .step-dot.completed {
+            background: var(--primary-gradient);
+            border-color: transparent;
+            color: white;
+        }
+        .step-label {
+            position: absolute;
+            top: 38px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            white-space: nowrap;
+            transition: color 0.4s ease;
+        }
+        .step-dot.active + .step-label {
+            color: var(--text-primary);
+        }
+        .step-dot.completed + .step-label {
+            color: #a78bfa;
+        }
+        .step-item-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex: 1;
+        }
+
+        /* Carousel Panel Transitions */
+        .step-carousel-wrapper {
+            overflow: hidden;
+            width: 100%;
+        }
+        .step-carousel-track {
+            display: flex;
+            width: 100%;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .step-carousel-slide {
+            flex: 0 0 100%;
+            width: 100%;
+            display: none;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .step-carousel-slide.active {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Typography */
+        h2 {
+            font-family: var(--font-outfit);
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+        .step-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.75rem;
+            line-height: 1.5;
+        }
+
+        /* Form elements styling */
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.25px;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .form-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.9rem 1rem 0.9rem 2.8rem;
+            color: #fff;
+            font-size: 0.95rem;
+            font-family: var(--font-inter);
+            outline: none;
+            transition: all 0.3s;
+        }
+        .form-input:hover {
+            border-color: var(--border-hover);
+        }
+        .form-input:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+            background: rgba(0, 0, 0, 0.35);
+        }
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            transition: color 0.3s;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+        .form-input:focus + .input-icon {
+            color: #a78bfa;
+        }
+
+        /* Phone badge indicator */
+        .phone-confirm-box {
+            background: rgba(124, 58, 237, 0.08);
+            border: 1px dashed rgba(124, 58, 237, 0.25);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        .phone-confirm-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .phone-confirm-num {
+            font-weight: 600;
+            color: #ddd;
+            font-size: 0.95rem;
+        }
+        .btn-edit-phone {
+            background: transparent;
+            border: none;
+            color: #a78bfa;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+        .btn-edit-phone:hover {
+            background: rgba(124, 58, 237, 0.15);
+            color: #c084fc;
+        }
+
+        /* Split OTP Inputs */
+        .otp-inputs-wrapper {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 1.75rem;
+        }
+        .otp-input-char {
+            width: 48px;
+            height: 52px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .otp-input-char:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+            background: rgba(0, 0, 0, 0.35);
+        }
+
+        /* Buttons */
+        .btn-submit {
+            width: 100%;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            color: white;
+            font-family: var(--font-outfit);
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: var(--neon-glow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(124, 58, 237, 0.6);
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        }
+        .btn-submit:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Spinner Micro-animation */
+        .spinner {
+            animation: spin 1s linear infinite;
+            display: none;
+            width: 18px;
+            height: 18px;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Resend Code Widget */
+        .resend-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.25rem;
+            font-size: 0.85rem;
+        }
+        .resend-text {
+            color: var(--text-secondary);
+        }
+        .resend-link {
+            color: #a78bfa;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .resend-link:hover {
+            color: #c084fc;
+            text-decoration: underline;
+        }
+        .resend-link.disabled {
+            color: var(--text-muted);
+            cursor: not-allowed;
+            text-decoration: none;
+        }
+
+        /* Success Flow UI card */
+        .success-state {
+            text-align: center;
+            padding: 1rem 0;
+            display: none;
+        }
+        .success-icon-badge {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.12);
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--success);
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+            animation: popSuccess 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        }
+        @keyframes popSuccess {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .btn-restart {
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-family: var(--font-outfit);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-restart:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Right Column: Response Dashboard */
+        .dashboard-section {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 1.75rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            max-height: calc(100vh - 120px);
+            position: sticky;
+            top: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .dashboard-title {
+            font-family: var(--font-outfit);
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #fff;
+        }
+        .dashboard-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 1rem;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.25rem;
+        }
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        .control-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #374151;
+            transition: .3s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #8b5cf6;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* URL Base Input */
+        .base-url-input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.4rem 0.6rem;
+            color: #fff;
+            font-size: 0.8rem;
+            font-family: var(--font-inter);
+            width: 160px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .base-url-input:focus {
+            border-color: var(--border-focus);
+        }
+
+        /* Network Log Summary */
+        .json-section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.75px;
+            color: var(--text-muted);
+            margin: 0.75rem 0 0.4rem 0.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .log-meta-panel {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .meta-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        .badge-status {
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .status-none {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+        .status-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .status-error {
+            background: rgba(244, 63, 94, 0.15);
+            color: #fb7185;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+        .endpoint-text {
+            font-family: monospace;
+            color: #a78bfa;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        /* JSON Code block layout */
+        .json-section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.75px;
+            color: var(--text-muted);
+            margin: 0.75rem 0 0.4rem 0.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .json-viewer-box {
+            background: #07070a;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            overflow: auto;
+            max-height: 180px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: pre;
+            color: #ddd;
+        }
+
+        /* Syntax highlighting */
+        .json-key { color: #818cf8; font-weight: 600; }
+        .json-string { color: #34d399; }
+        .json-number { color: #fbbf24; }
+        .json-boolean { color: #f472b6; }
+        .json-null { color: #9ca3af; }
+
+        /* Session panel */
+        .session-panel {
+            margin-top: 1.5rem;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 1.25rem;
+        }
+        .session-token-box {
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            position: relative;
+        }
+        .token-display-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .token-text {
+            font-family: monospace;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+            cursor: pointer;
+        }
+        .btn-copy {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        .btn-copy:hover {
+            color: #fff;
+        }
+        .btn-clear-session {
+            background: transparent;
+            border: 1px solid rgba(244, 63, 94, 0.25);
+            color: #fb7185;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-family: var(--font-outfit);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.75rem;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+        .btn-clear-session:hover {
+            background: rgba(244, 63, 94, 0.1);
+        }
+
+        /* Floating Toast Container */
+        .toast-container {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .toast {
+            min-width: 300px;
+            max-width: 420px;
+            background: rgba(20, 20, 28, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+            pointer-events: auto;
+            opacity: 0;
+        }
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .toast-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 2px;
+        }
+        .toast-success {
+            border-left: 4px solid var(--success);
+        }
+        .toast-success .toast-icon { color: var(--success); }
+        .toast-error {
+            border-left: 4px solid var(--error);
+        }
+        .toast-error .toast-icon { color: var(--error); }
+        .toast-info {
+            border-left: 4px solid var(--border-focus);
+        }
+        .toast-info .toast-icon { color: #a78bfa; }
+        .toast-content {
+            flex: 1;
+        }
+        .toast-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #fff;
+            margin-bottom: 0.2rem;
+        }
+        .toast-msg {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+        .toast-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .toast-close:hover {
+            color: #fff;
+        }
+
+        /* Footer styling */
+        footer {
+            margin-top: auto;
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background: rgba(10, 10, 15, 0.4);
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Glowing Orbs -->
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="logo">
+            <div class="logo-icon">P</div>
+            <span>PROMOTR</span>
+            <span class="logo-badge">ORGANISER</span>
         </div>
-        <pre id="responseBox">Ready</pre>
-      </aside>
-    </main>
+    </header>
 
-    <script src="/app.js"></script>
-  </body>
+    <!-- App container -->
+    <div class="app-container">
+        
+        <!-- Left Section: Interactive Form Panel -->
+        <main class="form-section">
+            <div class="auth-card">
+                
+                <!-- Tab Switching Pill Control -->
+                <div class="tabs-container">
+                    <div class="tab-indicator" id="tabIndicator"></div>
+                    <button class="tab-btn active" id="tabBtnLogin" onclick="switchTab('login')">
+                        <i data-lucide="log-in" style="width:16px;height:16px;"></i>
+                        Login
+                    </button>
+                    <button class="tab-btn" id="tabBtnRegister" onclick="switchTab('register')">
+                        <i data-lucide="user-plus" style="width:16px;height:16px;"></i>
+                        Register
+                    </button>
+                </div>
+
+                <!-- Dynamic Steps Indicator Bar (changes length based on active tab) -->
+                <div class="steps-progress-bar" id="stepsProgressBar">
+                    <div class="steps-progress-line"></div>
+                    <div class="steps-progress-fill" id="stepsProgressFill"></div>
+                    
+                    <div class="step-item-container" id="indicatorStep1">
+                        <div class="step-dot active">1</div>
+                        <div class="step-label">Contact</div>
+                    </div>
+                    <div class="step-item-container" id="indicatorStep2">
+                        <div class="step-dot">2</div>
+                        <div class="step-label">Verify</div>
+                    </div>
+                    <div class="step-item-container" id="indicatorStep3" style="display:none;">
+                        <div class="step-dot">3</div>
+                        <div class="step-label">Profile</div>
+                    </div>
+                </div>
+
+                <!-- Carousel-like Slides Container for Steps -->
+                <div class="step-carousel-wrapper">
+                    <div class="step-carousel-track" id="stepCarouselTrack">
+                        
+                        <!-- ================= LOGIN TAB: STEP 1 (Send OTP) ================= -->
+                        <div class="step-carousel-slide active" id="login-step1">
+                            <h2>Welcome Back</h2>
+                            <p class="step-description">Enter your registered mobile number to request a secure OTP.</p>
+                            <form id="loginFormStep1" onsubmit="handleLoginSubmitStep1(event)">
+                                <div class="form-group">
+                                    <label class="form-label" for="loginPhone">Phone Number</label>
+                                    <div class="input-wrapper">
+                                        <input type="tel" id="loginPhone" class="form-input" placeholder="+1234567890" required>
+                                        <div class="input-icon">
+                                            <i data-lucide="phone" style="width: 16px; height: 16px;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn-submit" id="btnLoginSendOtp">
+                                    <span>Send OTP Code</span>
+                                    <i data-lucide="arrow-right" class="btn-icon" style="width: 18px; height: 18px;"></i>
+                                    <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="30 30" style="opacity:0.25;"></circle>
+                                        <path d="M12 2C6.47715 2 2 6.47715 2 12C2 13.579 2.36622 15.071 3.02046 16.4L5.27368 15.273C4.78315 14.28 4.5 13.173 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12C19.5 16.1421 16.1421 19.5 12 19.5V22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" fill="currentColor"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- ================= LOGIN TAB: STEP 2 (Verify OTP) ================= -->
+                        <div class="step-carousel-slide" id="login-step2">
+                            <h2>Security Verification</h2>
+                            <p class="step-description">Please enter the authentication code sent to your mobile phone.</p>
+                            
+                            <div class="phone-confirm-box">
+                                <div class="phone-confirm-info">
+                                    <i data-lucide="smartphone" style="width:16px;height:16px;color:#a78bfa;"></i>
+                                    <span class="phone-confirm-num" id="loginPhoneConfirm">+1 (555) 019-2834</span>
+                                </div>
+                                <button class="btn-edit-phone" onclick="goToStep('login', 1)">
+                                    <i data-lucide="edit-3" style="width:12px;height:12px;"></i>
+                                    Edit
+                                </button>
+                            </div>
+
+                            <form id="loginFormStep2" onsubmit="handleLoginSubmitStep2(event)">
+                                <div class="form-group">
+                                    <label class="form-label">Verification Code (OTP)</label>
+                                    <div class="otp-inputs-wrapper" id="loginOtpWrapper">
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn-submit" id="btnLoginVerifyOtp">
+                                    <span>Verify & Login</span>
+                                    <i data-lucide="shield-check" class="btn-icon" style="width: 18px; height: 18px;"></i>
+                                    <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="30 30" style="opacity:0.25;"></circle>
+                                        <path d="M12 2C6.47715 2 2 6.47715 2 12C2 13.579 2.36622 15.071 3.02046 16.4L5.27368 15.273C4.78315 14.28 4.5 13.173 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12C19.5 16.1421 16.1421 19.5 12 19.5V22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" fill="currentColor"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                            <div class="resend-container">
+                                <span class="resend-text">Didn't receive the SMS?</span>
+                                <span class="resend-link" id="loginResendBtn" onclick="resendOtp('login')">Resend Code</span>
+                            </div>
+                        </div>
+
+                        <!-- ================= REGISTER TAB: STEP 1 (Send OTP) ================= -->
+                        <div class="step-carousel-slide" id="register-step1">
+                            <h2>Create Account</h2>
+                            <p class="step-description">Enter your mobile number to begin registering as a Promotr Organiser.</p>
+                            <form id="registerFormStep1" onsubmit="handleRegisterSubmitStep1(event)">
+                                <div class="form-group">
+                                    <label class="form-label" for="registerPhone">Phone Number</label>
+                                    <div class="input-wrapper">
+                                        <input type="tel" id="registerPhone" class="form-input" placeholder="+1234567890" required>
+                                        <div class="input-icon">
+                                            <i data-lucide="phone" style="width: 16px; height: 16px;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn-submit" id="btnRegisterSendOtp">
+                                    <span>Send OTP Code</span>
+                                    <i data-lucide="arrow-right" class="btn-icon" style="width: 18px; height: 18px;"></i>
+                                    <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="30 30" style="opacity:0.25;"></circle>
+                                        <path d="M12 2C6.47715 2 2 6.47715 2 12C2 13.579 2.36622 15.071 3.02046 16.4L5.27368 15.273C4.78315 14.28 4.5 13.173 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12C19.5 16.1421 16.1421 19.5 12 19.5V22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" fill="currentColor"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- ================= REGISTER TAB: STEP 2 (Verify OTP) ================= -->
+                        <div class="step-carousel-slide" id="register-step2">
+                            <h2>Security Verification</h2>
+                            <p class="step-description">Verify your registration phone number by entering the OTP sent.</p>
+                            
+                            <div class="phone-confirm-box">
+                                <div class="phone-confirm-info">
+                                    <i data-lucide="smartphone" style="width:16px;height:16px;color:#a78bfa;"></i>
+                                    <span class="phone-confirm-num" id="registerPhoneConfirm">+1 (555) 019-2834</span>
+                                </div>
+                                <button class="btn-edit-phone" onclick="goToStep('register', 1)">
+                                    <i data-lucide="edit-3" style="width:12px;height:12px;"></i>
+                                    Edit
+                                </button>
+                            </div>
+
+                            <form id="registerFormStep2" onsubmit="handleRegisterSubmitStep2(event)">
+                                <div class="form-group">
+                                    <label class="form-label">Verification Code (OTP)</label>
+                                    <div class="otp-inputs-wrapper" id="registerOtpWrapper">
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                        <input type="text" class="otp-input-char" maxlength="1" pattern="[0-9]" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn-submit" id="btnRegisterVerifyOtp">
+                                    <span>Verify Code</span>
+                                    <i data-lucide="shield-check" class="btn-icon" style="width: 18px; height: 18px;"></i>
+                                    <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="30 30" style="opacity:0.25;"></circle>
+                                        <path d="M12 2C6.47715 2 2 6.47715 2 12C2 13.579 2.36622 15.071 3.02046 16.4L5.27368 15.273C4.78315 14.28 4.5 13.173 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12C19.5 16.1421 16.1421 19.5 12 19.5V22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" fill="currentColor"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                            <div class="resend-container">
+                                <span class="resend-text">Didn't receive the SMS?</span>
+                                <span class="resend-link" id="registerResendBtn" onclick="resendOtp('register')">Resend Code</span>
+                            </div>
+                        </div>
+
+                        <!-- ================= REGISTER TAB: STEP 3 (Complete Profile) ================= -->
+                        <div class="step-carousel-slide" id="register-step3">
+                            <h2>Complete Profile</h2>
+                            <p class="step-description">Fill out your profile metadata to finalize the organiser registration.</p>
+                            <form id="registerFormStep3" onsubmit="handleRegisterSubmitStep3(event)">
+                                <div class="form-group">
+                                    <label class="form-label" for="registerName">Full Name</label>
+                                    <div class="input-wrapper">
+                                        <input type="text" id="registerName" class="form-input" placeholder="Alex Carter" required>
+                                        <div class="input-icon">
+                                            <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="registerEmail">Email Address</label>
+                                    <div class="input-wrapper">
+                                        <input type="email" id="registerEmail" class="form-input" placeholder="alex@promotr.co" required>
+                                        <div class="input-icon">
+                                            <i data-lucide="mail" style="width: 16px; height: 16px;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn-submit" id="btnRegisterComplete">
+                                    <span>Complete Registration</span>
+                                    <i data-lucide="check-circle-2" class="btn-icon" style="width: 18px; height: 18px;"></i>
+                                    <svg class="spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="30 30" style="opacity:0.25;"></circle>
+                                        <path d="M12 2C6.47715 2 2 6.47715 2 12C2 13.579 2.36622 15.071 3.02046 16.4L5.27368 15.273C4.78315 14.28 4.5 13.173 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12C19.5 16.1421 16.1421 19.5 12 19.5V22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" fill="currentColor"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- ================= FLOW SUCCESS STATE ================= -->
+                        <div class="step-carousel-slide" id="flow-success">
+                            <div class="success-state" id="successStateLayout">
+                                <div class="success-icon-badge">
+                                    <i data-lucide="check" style="width: 38px; height: 38px;"></i>
+                                </div>
+                                <h2 id="successTitle">Authentication Successful!</h2>
+                                <p class="step-description" id="successMsg">You have successfully authenticated as a Promotr Organiser. Your active session token has been securely generated.</p>
+                                
+                                <button class="btn-restart" onclick="restartAuthFlow()">
+                                    <i data-lucide="rotate-ccw" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>
+                                    Restart Flow
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Right Section: Response Dashboard Panel -->
+        <aside class="dashboard-section">
+            
+            <div class="dashboard-header">
+                <div class="dashboard-title">
+                    <i data-lucide="terminal" style="width:20px;height:20px;color:#a78bfa;"></i>
+                    Response Dashboard
+                </div>
+            </div>
+
+            <!-- Mode Controls -->
+            <div class="dashboard-controls">
+                <div class="control-row">
+                    <span class="control-label">
+                        <i data-lucide="activity" style="width:14px;height:14px;"></i>
+                        Mock API Mode
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="mockToggle" checked onchange="toggleMockMode(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">
+                        <i data-lucide="link" style="width:14px;height:14px;"></i>
+                        API Base URL
+                    </span>
+                    <input type="text" id="baseUrlInput" class="base-url-input" value="http://localhost:4000" placeholder="e.g. http://localhost:4000">
+                </div>
+            </div>
+
+            <!-- Network Log Summary -->
+            <div class="json-section-title">
+                <span>Last Endpoint Call</span>
+                <span id="logLatency" style="font-size:0.75rem;font-weight:normal;color:var(--text-muted);">Latency: --</span>
+            </div>
+            <div class="log-meta-panel">
+                <div class="meta-line">
+                    <span class="endpoint-text" id="logEndpoint">-- --</span>
+                    <span class="badge-status status-none" id="logStatusBadge">Idle</span>
+                </div>
+            </div>
+
+            <!-- JSON Payload Inspection -->
+            <div class="json-section-title">Request Payload</div>
+            <div class="json-viewer-box" id="jsonRequestViewer">{}</div>
+
+            <div class="json-section-title">Response Body</div>
+            <div class="json-viewer-box" id="jsonResponseViewer">{}</div>
+
+            <!-- Session Storage Section -->
+            <div class="session-panel">
+                <div class="json-section-title">Session State</div>
+                <div class="session-token-box">
+                    <div class="token-display-row">
+                        <span style="font-weight:600;color:white;font-size:0.75rem;">organiserToken</span>
+                        <button class="btn-copy" onclick="copySessionToken()" title="Copy token">
+                            <i data-lucide="copy" style="width:14px;height:14px;" id="copyIcon"></i>
+                        </button>
+                    </div>
+                    <div class="token-text" id="tokenDisplay" onclick="copySessionToken()">No active token. Authenticate to generate.</div>
+                </div>
+                <button class="btn-clear-session" id="btnClearSession" onclick="clearSession()" style="display:none;">
+                    <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                    Clear Session Token
+                </button>
+            </div>
+
+        </aside>
+
+    </div>
+
+    <!-- Page Footer -->
+    <footer>
+        <p>Promotr Organiser Auth Console &copy; 2026. Made with styling excellence.</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- App Global State ---
+        const state = {
+            currentTab: 'login', // 'login' | 'register'
+            loginStep: 1,       // 1-2
+            registerStep: 1,    // 1-3
+            isMock: true,
+            phone: '',
+            token: '',
+            organiserName: '',
+            organiserEmail: '',
+            lastResponse: null
+        };
+
+        // Initialize App on DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup Lucide icons
+            lucide.createIcons();
+            
+            // Retrieve local storage states if they exist
+            const savedToken = localStorage.getItem('promotr_organiser_token');
+            const savedPhone = localStorage.getItem('promotr_organiser_phone');
+            if (savedToken) {
+                state.token = savedToken;
+                state.phone = savedPhone || '';
+                updateSessionDashboard();
+            }
+
+            // Sync Mock checkbox with UI state
+            document.getElementById('mockToggle').checked = state.isMock;
+            
+            // Sync API Base URL with current host, or fallback if opened as a local file
+            if (window.location.protocol.startsWith('http')) {
+                document.getElementById('baseUrlInput').value = window.location.origin;
+            } else {
+                document.getElementById('baseUrlInput').value = 'http://localhost:4000';
+            }
+
+            // Setup OTP fields automatic focus behavior
+            setupOtpInputs('loginOtpWrapper');
+            setupOtpInputs('registerOtpWrapper');
+
+            // Render current UI
+            updateStepsIndicator();
+        });
+
+        // Toggle Mock API Mode
+        function toggleMockMode(checked) {
+            state.isMock = checked;
+            showToast(
+                `Switched to ${checked ? 'Mock API Mode' : 'Live Express Backend'}`, 
+                checked ? 'info' : 'warning'
+            );
+        }
+
+        // --- Tab Management ---
+        function switchTab(tab) {
+            if (state.currentTab === tab) return;
+            
+            state.currentTab = tab;
+            
+            // Update Tab Button styles
+            const tabBtnLogin = document.getElementById('tabBtnLogin');
+            const tabBtnRegister = document.getElementById('tabBtnRegister');
+            const tabIndicator = document.getElementById('tabIndicator');
+            
+            if (tab === 'login') {
+                tabBtnLogin.classList.add('active');
+                tabBtnRegister.classList.remove('active');
+                tabIndicator.style.transform = 'translateX(0)';
+                
+                // Hide register step 3 indicator node
+                document.getElementById('indicatorStep3').style.display = 'none';
+            } else {
+                tabBtnLogin.classList.remove('active');
+                tabBtnRegister.classList.add('active');
+                tabIndicator.style.transform = 'translateX(100%)';
+                
+                // Show register step 3 indicator node
+                document.getElementById('indicatorStep3').style.display = 'flex';
+            }
+
+            // Reset step slides visibility
+            resetCarouselTrack();
+
+            // Refresh progress dots state
+            updateStepsIndicator();
+        }
+
+        // Reset forms carousel alignment and inputs
+        function resetCarouselTrack() {
+            // Hide all slides
+            const slides = document.querySelectorAll('.step-carousel-slide');
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            // Activate Step 1 slide of the target tab
+            const targetSlide = document.getElementById(`${state.currentTab}-step1`);
+            if (targetSlide) targetSlide.classList.add('active');
+
+            // Reset current step numbers
+            state.loginStep = 1;
+            state.registerStep = 1;
+
+            // Reset Form fields
+            document.getElementById('loginPhone').value = '';
+            document.getElementById('registerPhone').value = '';
+            document.getElementById('registerName').value = '';
+            document.getElementById('registerEmail').value = '';
+            
+            clearOtpFields('loginOtpWrapper');
+            clearOtpFields('registerOtpWrapper');
+        }
+
+        // Clear split OTP values
+        function clearOtpFields(wrapperId) {
+            const inputs = document.querySelectorAll(`#${wrapperId} .otp-input-char`);
+            inputs.forEach(input => input.value = '');
+        }
+
+        // --- Step Carousel Manager ---
+        function goToStep(tab, stepNumber) {
+            // Update local state
+            if (tab === 'login') {
+                state.loginStep = stepNumber;
+            } else {
+                state.registerStep = stepNumber;
+            }
+
+            // Select all slides and hide them
+            const slides = document.querySelectorAll('.step-carousel-slide');
+            slides.forEach(slide => slide.classList.remove('active'));
+
+            let targetSlideId = `${tab}-step${stepNumber}`;
+            if (stepNumber === 'success') {
+                targetSlideId = 'flow-success';
+            }
+
+            const targetSlide = document.getElementById(targetSlideId);
+            if (targetSlide) {
+                targetSlide.classList.add('active');
+                
+                // Trigger subtle slide in effect
+                targetSlide.style.opacity = '0';
+                targetSlide.style.transform = 'translateX(15px)';
+                setTimeout(() => {
+                    targetSlide.style.opacity = '1';
+                    targetSlide.style.transform = 'translateX(0)';
+                }, 50);
+            }
+
+            // Sync visual dots
+            updateStepsIndicator();
+        }
+
+        // --- Step Progress Indicators Control ---
+        function updateStepsIndicator() {
+            const stepDots = document.querySelectorAll('.step-dot');
+            const stepLabels = document.querySelectorAll('.step-label');
+            const fillLine = document.getElementById('stepsProgressFill');
+            
+            // Get active tab variables
+            const curStep = state.currentTab === 'login' ? state.loginStep : state.registerStep;
+            const totalSteps = state.currentTab === 'login' ? 2 : 3;
+
+            // Handle success layout override
+            if (curStep === 'success') {
+                fillLine.style.width = '100%';
+                stepDots.forEach(dot => {
+                    dot.classList.add('completed');
+                    dot.classList.remove('active');
+                    dot.innerHTML = `<i data-lucide="check" style="width:14px;height:14px;"></i>`;
+                });
+                lucide.createIcons();
+                return;
+            }
+
+            // Calculate progress line fill percentage
+            const percentage = ((curStep - 1) / (totalSteps - 1)) * 100;
+            fillLine.style.width = `${percentage}%`;
+
+            // Style individual dots
+            for (let i = 1; i <= 3; i++) {
+                const dotContainer = document.getElementById(`indicatorStep${i}`);
+                if (!dotContainer) continue;
+                
+                const dot = dotContainer.querySelector('.step-dot');
+                
+                if (i > totalSteps) {
+                    dotContainer.style.display = 'none';
+                    continue;
+                }
+
+                if (i < curStep) {
+                    // Completed step
+                    dot.className = "step-dot completed";
+                    dot.innerHTML = `<i data-lucide="check" style="width:14px;height:14px;"></i>`;
+                } else if (i === curStep) {
+                    // Active step
+                    dot.className = "step-dot active";
+                    dot.innerHTML = i;
+                } else {
+                    // Pending step
+                    dot.className = "step-dot";
+                    dot.innerHTML = i;
+                }
+            }
+
+            lucide.createIcons();
+        }
+
+        // --- Split OTP inputs auto-focus management ---
+        function setupOtpInputs(wrapperId) {
+            const wrapper = document.getElementById(wrapperId);
+            const inputs = wrapper.querySelectorAll('.otp-input-char');
+            
+            inputs.forEach((input, index) => {
+                // Focus next input on numeric typing
+                input.addEventListener('input', (e) => {
+                    const value = e.target.value;
+                    if (value && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                });
+
+                // Handle backspace navigation
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                });
+            });
+        }
+
+        // Fetch aggregated OTP text
+        function getOtpValue(wrapperId) {
+            const inputs = document.querySelectorAll(`#${wrapperId} .otp-input-char`);
+            let otp = '';
+            inputs.forEach(input => otp += input.value);
+            return otp;
+        }
+
+        // --- API & Network Helpers ---
+        async function runAPIRequest(endpoint, payload) {
+            const requestTime = Date.now();
+            const baseUrl = document.getElementById('baseUrlInput').value.trim();
+            const fullUrl = `${baseUrl}${endpoint}`;
+
+            // Logger updates: Request Preview
+            document.getElementById('logEndpoint').innerText = `POST ${endpoint}`;
+            document.getElementById('logStatusBadge').innerText = 'PENDING';
+            document.getElementById('logStatusBadge').className = 'badge-status status-none';
+            document.getElementById('jsonRequestViewer').innerHTML = highlightJSON(payload);
+            document.getElementById('jsonResponseViewer').innerText = 'Awaiting response...';
+            document.getElementById('logLatency').innerText = 'Latency: --';
+
+            if (state.isMock) {
+                // Simulation response
+                await new Promise(resolve => setTimeout(resolve, 800));
+                const latency = Date.now() - requestTime;
+                
+                let mockResponse = {};
+                let status = 200;
+                let statusText = "OK";
+
+                // Mock Router
+                if (endpoint === '/auth/organiser/send-otp' || endpoint === '/auth/organiser/register/send-otp') {
+                    mockResponse = {
+                        success: true,
+                        message: `One-Time verification passcode sent successfully to ${payload.phone}.`,
+                        otpExpiry: "5 minutes"
+                    };
+                } else if (endpoint === '/auth/organiser/verify-otp' || endpoint === '/auth/organiser/register/verify-otp') {
+                    // Let's mock a simple check code
+                    if (payload.otp === "111111") {
+                        status = 400;
+                        statusText = "Bad Request";
+                        mockResponse = {
+                            success: false,
+                            error: "InvalidOTP",
+                            message: "The verification code provided is incorrect or has expired."
+                        };
+                    } else {
+                        mockResponse = {
+                            success: true,
+                            message: "Mobile phone OTP code verified successfully.",
+                            token: `mock-jwt-session-token-hash-organiser-${Math.random().toString(36).substring(2, 12)}`
+                        };
+                    }
+                } else if (endpoint === '/auth/organiser/register/complete') {
+                    mockResponse = {
+                        success: true,
+                        message: "Promotr Organiser registration finalized.",
+                        token: `mock-jwt-completed-session-auth-${Math.random().toString(36).substring(2, 12)}`,
+                        organiser: {
+                            id: "org_918231",
+                            phone: payload.phone,
+                            name: payload.name,
+                            email: payload.email,
+                            role: "organiser",
+                            status: "active"
+                        }
+                    };
+                }
+
+                // Render in Dashboard
+                updateDashboardSuccess(status, statusText, mockResponse, latency);
+                return { ok: status === 200, status, body: mockResponse };
+            } else {
+                // Real Live API Request
+                try {
+                    const response = await fetch(fullUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const latency = Date.now() - requestTime;
+                    const responseBody = await response.json().catch(() => ({}));
+                    
+                    updateDashboardSuccess(response.status, response.statusText, responseBody, latency);
+                    
+                    return { ok: response.ok, status: response.status, body: responseBody };
+                } catch (error) {
+                    const latency = Date.now() - requestTime;
+                    const errorPayload = {
+                        success: false,
+                        error: "NetworkError",
+                        message: `Failed to interface with Express Server. ${error.message}`
+                    };
+                    updateDashboardFailure(0, "Network Error", errorPayload, latency);
+                    return { ok: false, status: 0, body: errorPayload };
+                }
+            }
+        }
+
+        // Update dashboard logs on success response
+        function updateDashboardSuccess(status, statusText, body, latency) {
+            document.getElementById('logLatency').innerText = `Latency: ${latency}ms`;
+            
+            const badge = document.getElementById('logStatusBadge');
+            badge.innerText = `${status} ${statusText}`;
+            
+            if (status >= 200 && status < 300) {
+                badge.className = 'badge-status status-success';
+            } else {
+                badge.className = 'badge-status status-error';
+            }
+            
+            document.getElementById('jsonResponseViewer').innerHTML = highlightJSON(body);
+        }
+
+        // Update dashboard logs on complete failure
+        function updateDashboardFailure(status, statusText, body, latency) {
+            document.getElementById('logLatency').innerText = `Latency: ${latency}ms`;
+            const badge = document.getElementById('logStatusBadge');
+            badge.innerText = status ? `${status} ${statusText}` : 'Failed';
+            badge.className = 'badge-status status-error';
+            document.getElementById('jsonResponseViewer').innerHTML = highlightJSON(body);
+        }
+
+        // JSON formatter and highlight builder
+        function highlightJSON(jsonObj) {
+            if (!jsonObj) return '';
+            const jsonStr = JSON.stringify(jsonObj, null, 2);
+            const escaped = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return escaped.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return `<span class="${cls}">${match}</span>`;
+            });
+        }
+
+        // --- Form Submission Handlers ---
+
+        // Login Step 1: Send OTP
+        async function handleLoginSubmitStep1(event) {
+            event.preventDefault();
+            const phoneInput = document.getElementById('loginPhone').value.trim();
+            if (!phoneInput) {
+                showToast("Please enter a valid phone number", "error");
+                return;
+            }
+
+            // Save phone globally
+            state.phone = phoneInput;
+
+            setButtonLoading('btnLoginSendOtp', true);
+            const result = await runAPIRequest('/auth/organiser/send-otp', { phone: phoneInput });
+            setButtonLoading('btnLoginSendOtp', false);
+
+            if (result.ok) {
+                showToast("Verification code dispatched successfully", "success");
+                
+                // Render Phone confirmation
+                document.getElementById('loginPhoneConfirm').innerText = phoneInput;
+                
+                // Go to step 2
+                goToStep('login', 2);
+            } else {
+                showToast(result.body.message || "Failed to dispatch verification code", "error");
+            }
+        }
+
+        // Login Step 2: Verify OTP
+        async function handleLoginSubmitStep2(event) {
+            event.preventDefault();
+            const otpCode = getOtpValue('loginOtpWrapper');
+            if (otpCode.length < 6) {
+                showToast("Please enter the complete 6-digit verification code", "error");
+                return;
+            }
+
+            setButtonLoading('btnLoginVerifyOtp', true);
+            const result = await runAPIRequest('/auth/organiser/verify-otp', {
+                phone: state.phone,
+                otp: otpCode
+            });
+            setButtonLoading('btnLoginVerifyOtp', false);
+
+            if (result.ok) {
+                showToast("OTP Verified successfully. Logging in...", "success");
+                
+                // Save tokens
+                state.token = result.body.token;
+                localStorage.setItem('promotr_organiser_token', state.token);
+                localStorage.setItem('promotr_organiser_phone', state.phone);
+                updateSessionDashboard();
+
+                // Setup success layout
+                document.getElementById('successTitle').innerText = "Logged In Successfully!";
+                document.getElementById('successMsg').innerText = "Organiser authentication session created. You can copy the session token from the Response Dashboard.";
+                
+                goToStep('login', 'success');
+            } else {
+                showToast(result.body.message || "Invalid OTP code entered", "error");
+            }
+        }
+
+        // Register Step 1: Send OTP
+        async function handleRegisterSubmitStep1(event) {
+            event.preventDefault();
+            const phoneInput = document.getElementById('registerPhone').value.trim();
+            if (!phoneInput) {
+                showToast("Please enter a valid phone number", "error");
+                return;
+            }
+
+            state.phone = phoneInput;
+
+            setButtonLoading('btnRegisterSendOtp', true);
+            const result = await runAPIRequest('/auth/organiser/register/send-otp', { phone: phoneInput });
+            setButtonLoading('btnRegisterSendOtp', false);
+
+            if (result.ok) {
+                showToast("OTP sent successfully", "success");
+                
+                // Render Phone confirmation
+                document.getElementById('registerPhoneConfirm').innerText = phoneInput;
+                
+                // Go to step 2
+                goToStep('register', 2);
+            } else {
+                showToast(result.body.message || "Failed to dispatch registration OTP", "error");
+            }
+        }
+
+        // Register Step 2: Verify OTP
+        async function handleRegisterSubmitStep2(event) {
+            event.preventDefault();
+            const otpCode = getOtpValue('registerOtpWrapper');
+            if (otpCode.length < 6) {
+                showToast("Please enter the complete 6-digit verification code", "error");
+                return;
+            }
+
+            setButtonLoading('btnRegisterVerifyOtp', true);
+            const result = await runAPIRequest('/auth/organiser/register/verify-otp', {
+                phone: state.phone,
+                otp: otpCode
+            });
+            setButtonLoading('btnRegisterVerifyOtp', false);
+
+            if (result.ok) {
+                showToast("OTP verified. Fill out registration details to complete profile.", "success");
+                
+                // Save token returned if any
+                if (result.body.token) {
+                    state.token = result.body.token;
+                }
+                
+                // Transition to Step 3
+                goToStep('register', 3);
+            } else {
+                showToast(result.body.message || "Invalid verification code", "error");
+            }
+        }
+
+        // Register Step 3: Complete Profile
+        async function handleRegisterSubmitStep3(event) {
+            event.preventDefault();
+            const nameInput = document.getElementById('registerName').value.trim();
+            const emailInput = document.getElementById('registerEmail').value.trim();
+
+            if (!nameInput || !emailInput) {
+                showToast("Please fill in both Name and Email fields", "error");
+                return;
+            }
+
+            state.organiserName = nameInput;
+            state.organiserEmail = emailInput;
+
+            setButtonLoading('btnRegisterComplete', true);
+            const result = await runAPIRequest('/auth/organiser/register/complete', {
+                phone: state.phone,
+                name: nameInput,
+                email: emailInput
+            });
+            setButtonLoading('btnRegisterComplete', false);
+
+            if (result.ok) {
+                showToast("Registration finalized successfully!", "success");
+                
+                // Save tokens
+                state.token = result.body.token;
+                localStorage.setItem('promotr_organiser_token', state.token);
+                localStorage.setItem('promotr_organiser_phone', state.phone);
+                updateSessionDashboard();
+
+                // Setup success layout
+                document.getElementById('successTitle').innerText = "Registration Complete!";
+                document.getElementById('successMsg').innerText = `Welcome to Promotr Organiser portal, ${nameInput}. Your organiser profile has been generated successfully.`;
+                
+                goToStep('register', 'success');
+            } else {
+                showToast(result.body.message || "Registration failed", "error");
+            }
+        }
+
+        // Resend OTP trigger handler
+        async function resendOtp(tab) {
+            showToast("Re-dispatched OTP to mobile number", "info");
+            
+            const endpoint = tab === 'login' ? '/auth/organiser/send-otp' : '/auth/organiser/register/send-otp';
+            
+            // Temporary disable resend link to prevent spamming
+            const linkId = tab === 'login' ? 'loginResendBtn' : 'registerResendBtn';
+            const link = document.getElementById(linkId);
+            link.classList.add('disabled');
+            link.onclick = null;
+            
+            // Perform actual API request in background
+            await runAPIRequest(endpoint, { phone: state.phone });
+
+            let count = 30;
+            const timer = setInterval(() => {
+                count--;
+                if (count <= 0) {
+                    clearInterval(timer);
+                    link.innerText = "Resend Code";
+                    link.classList.remove('disabled');
+                    link.onclick = () => resendOtp(tab);
+                } else {
+                    link.innerText = `Resend in (${count}s)`;
+                }
+            }, 1000);
+        }
+
+        // --- Form Loading Morph Effect helper ---
+        function setButtonLoading(buttonId, isLoading) {
+            const btn = document.getElementById(buttonId);
+            const spinner = btn.querySelector('.spinner');
+            const icon = btn.querySelector('.btn-icon');
+            const spanText = btn.querySelector('span');
+
+            if (isLoading) {
+                btn.disabled = true;
+                if (spinner) spinner.style.display = 'block';
+                if (icon) icon.style.display = 'none';
+                if (spanText) spanText.setAttribute('data-old-text', spanText.innerText);
+                if (spanText) spanText.innerText = "Processing Request...";
+            } else {
+                btn.disabled = false;
+                if (spinner) spinner.style.display = 'none';
+                if (icon) icon.style.display = 'block';
+                if (spanText && spanText.hasAttribute('data-old-text')) {
+                    spanText.innerText = spanText.getAttribute('data-old-text');
+                }
+            }
+        }
+
+        // --- Session State Managers ---
+        function updateSessionDashboard() {
+            const tokenDisplay = document.getElementById('tokenDisplay');
+            const clearBtn = document.getElementById('btnClearSession');
+            
+            if (state.token) {
+                tokenDisplay.innerText = state.token;
+                tokenDisplay.title = state.token;
+                clearBtn.style.display = 'block';
+            } else {
+                tokenDisplay.innerText = "No active token. Authenticate to generate.";
+                tokenDisplay.title = "";
+                clearBtn.style.display = 'none';
+            }
+        }
+
+        // Clear session token helper
+        function clearSession() {
+            state.token = '';
+            localStorage.removeItem('promotr_organiser_token');
+            localStorage.removeItem('promotr_organiser_phone');
+            updateSessionDashboard();
+            showToast("Session token cleared from storage", "info");
+        }
+
+        // Copy session token to clipboard helper
+        function copySessionToken() {
+            if (!state.token) {
+                showToast("No token to copy", "warning");
+                return;
+            }
+            
+            navigator.clipboard.writeText(state.token).then(() => {
+                showToast("Token copied to clipboard!", "success");
+                
+                // Swap copy icon temporarily
+                const copyIcon = document.getElementById('copyIcon');
+                copyIcon.setAttribute('data-lucide', 'check');
+                lucide.createIcons();
+                
+                setTimeout(() => {
+                    copyIcon.setAttribute('data-lucide', 'copy');
+                    lucide.createIcons();
+                }, 1500);
+            }).catch(() => {
+                showToast("Failed to copy token", "error");
+            });
+        }
+
+        function restartAuthFlow() {
+            resetCarouselTrack();
+            updateStepsIndicator();
+            showToast("Auth console state reset", "info");
+        }
+
+        // --- Floating Toast Notification Engine ---
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            
+            // Create Toast element
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            // Icon mapping
+            let iconName = 'check-circle-2';
+            let title = 'Success';
+            if (type === 'error') {
+                iconName = 'alert-octagon';
+                title = 'Error';
+            } else if (type === 'warning') {
+                iconName = 'alert-triangle';
+                title = 'Warning';
+            } else if (type === 'info') {
+                iconName = 'info';
+                title = 'System Alert';
+            }
+
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i data-lucide="${iconName}" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-msg">${message}</div>
+                </div>
+                <div class="toast-close" onclick="closeToast(this)">
+                    <i data-lucide="x" style="width: 16px; height: 16px; cursor: pointer;"></i>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            lucide.createIcons();
+
+            // Slide in animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 50);
+
+            // Auto dismiss after 4 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 4000);
+        }
+
+        function closeToast(btn) {
+            const toast = btn.closest('.toast');
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }
+    </script>
+</body>
 </html>
